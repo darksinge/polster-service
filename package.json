@@ -1,0 +1,23 @@
+{
+  "name": "polster-service",
+  "version": "1.0.0",
+  "description": "",
+  "main": "handler.js",
+  "dependencies": {
+    "dynamoose": "^1.11.1"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/darksinge/polster-service.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/darksinge/polster-service/issues"
+  },
+  "homepage": "https://github.com/darksinge/polster-service#readme"
+}
