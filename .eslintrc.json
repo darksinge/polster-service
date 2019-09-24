@@ -1,0 +1,27 @@
+{
+  "extends": ["plugin:prettier/recommended"],
+  "env": {
+    "es6": true,
+    "node": true,
+    "jest": true
+  },
+  "parserOptions": {
+    "ecmaVersion": 2018
+  },
+  "rules": {
+    "no-unused-vars": [
+      "error",
+      {
+        "vars": "all",
+        "args": "none",
+        "ignoreRestSiblings": false
+      }
+    ],
+    "no-console": "off",
+    "require-await": "off",
+    "no-return-await": "off",
+    "quotes": "off",
+    "no-useless-catch": "off",
+    "object-property-newline": "off"
+  }
+}

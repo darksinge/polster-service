@@ -4,9 +4,16 @@
   "description": "",
   "main": "handler.js",
   "dependencies": {
-    "dynamoose": "^1.11.1"
+    "aws-sdk": "^2.535.0",
+    "dynamoose": "^1.11.1",
+    "uuid": "^3.3.3"
   },
-  "devDependencies": {},
+  "devDependencies": {
+    "eslint": "^6.4.0",
+    "eslint-config-prettier": "^6.3.0",
+    "eslint-plugin-prettier": "^3.1.1",
+    "prettier": "1.18.2"
+  },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
@@ -19,5 +26,10 @@
   "bugs": {
     "url": "https://github.com/darksinge/polster-service/issues"
   },
-  "homepage": "https://github.com/darksinge/polster-service#readme"
+  "homepage": "https://github.com/darksinge/polster-service#readme",
+  "prettier": {
+    "semi": false,
+    "printWidth": 100,
+    "singleQuote": true
+  }
 }
