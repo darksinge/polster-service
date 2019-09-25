@@ -1,57 +1,66 @@
-const alphabet = 'abcdefghijklmnopqrstuvwxyz'.split('').map(c => c.toUpperCase())
+const { PollModel } = require('./poll-model')
+const { Answer, AnswerCollection } = require('./answer')
+
+const alphabet = [...'abcdefghijklmnopqrstuvwxyz'.toUpperCase()]
 
 class QuestionError extends Error {}
 
-class QuestionValidator {
-  static answerLength(answers) {
-    if (answers.length > alphabet.length) {
-      throw new QuestionError(
-        `Too many answers: questions can have up to ${alphabet.length} answers.`
-      )
-    }
+const requiredArg = (name, defaultValue) => {
+  if (!defaultValue) {
+    throw new QuestionError(`${name} parameter is required`)
   }
+  return defaultValue
 }
 
 class Question {
-  constructor(question, answers, isTF = false) {
-    this.name = question
+  constructor(questionText, pollId, isTF = false) {
+    this.questionText = questionText
     this.questionId = null
-    this.answers = answers || []
+    this.answers = new AnswerCollection()
+    this.pollId = pollId
     this.isTF = isTF
-
-    this._validate()
-  }
-
-  _validate() {
-    QuestionValidator.answerLength(this.answers)
-  }
-
-  addAnswer(text, label, selectedCount = 0) {
-    this.answers.push({
-      text,
-      label,
-      selectedCount
-    })
-
-    QuestionValidator.answerLength(this.answers)
   }
 
   addLabels(type = 'alphabet') {
-    switch (type) {
-      case 'alphabet': {
-        for (let i = 0; i < answers.length; i++) {
-          answers[i].label = alphabet[i]
+    function getLabels(type, count) {
+      switch (type) {
+        case 'alphabet': {
+          return alphabet.slice(0, count)
         }
-      }
-      case 'numeric': {
-        for (let i = 0; i < answers.length; i++) {
-          answers[i].label = `${i}.`
+        case 'numeric': {
+          return Array(count)
+            .fill()
+            .map((_, i) => i.toString())
         }
+        default:
+          throw new QuestionError(`type '${type}' is not a valid label type`)
       }
-      default:
-        throw new QuestionError(`type '${type}' is not a valid label type`)
     }
+
+    const labels = getLabels(type, this.answers.length)
+    for (let i = 0; i < this.answers.length; i++) {
+      const answer = this.answers[i]
+      if (!answer.label) {
+        answers.label = labels.pop()
+      }
+    }
+  }
+
+  createTransaction(
+    pollId = requiredArg('pollId', this.pollId),
+    questionId = requiredArg('questionId', this.questionId)
+  ) {
+    return PollModel.transaction.create({
+      id: pollId ? pollId : this.pollId,
+      questionId: questionId ? questionId : this.questionId,
+      name: this.questionText,
+      answers: this.answers.map(answer => answer.toObject())
+    })
+  }
+
+  addAnswer(text, label, selectedCount) {
+    this.answers.push(new Answer(text, label, selectedCount))
   }
 }
 
-module.exports = Question
+module.exports.Question = Question

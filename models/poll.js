@@ -1,73 +1,11 @@
 const dynamoose = require('dynamoose')
-const uuid = require('uuid').v4
+const { PollModel } = require('./poll-model')
 const Question = require('./question')
-
-// const AWS = require('aws-sdk')
-// const ENDPOINT = 'http://localhost:8000'
-// const credentials = new AWS.Credentials('akid', 'secret', 'session')
-// const ddb = new AWS.DynamoDB({
-//   credentials,
-//   region: 'us-east-2',
-//   endpoint: ENDPOINT
-// })
-//
-// dynamoose.local(ENDPOINT)
-// dynamoose.setDefaults({
-//   create: true,
-//   waitForActive: true
-// })
-//
-// dynamoose.setDDB(ddb)
-
-const schema = new dynamoose.Schema({
-  id: {
-    type: String,
-    hashKey: true,
-    default: () => uuid()
-  },
-  questionId: {
-    type: String,
-    rangeKey: true,
-    required: true
-  },
-  name: {
-    type: String,
-    required: true
-  },
-  answers: {
-    type: 'list',
-    list: [
-      {
-        type: 'map',
-        map: {
-          text: String,
-          label: String,
-          selectedCount: Number
-        }
-      }
-    ]
-  },
-  isTF: {
-    type: Boolean,
-    default: false
-  }
-})
-
-schema.statics.getQuestionsByPollId = async function(id) {
-  const poll = await this.query('id')
-    .eq(id)
-    .exec()
-  const questions = poll.filter(({ id, questionId }) => id !== questionId)
-  return questions
-}
-
-const PollModel = dynamoose.model('PollTable', schema)
 
 class Poll {
   constructor(title, id = null) {
     this.title = title
     this.id = id || uuid()
-    this.questionId = this.id
     this.questions = []
   }
 
@@ -91,6 +29,22 @@ class Poll {
     }
     return poll
   }
+
+  async create() {
+    const questionTransactions = this.questions.map((question, index) => {
+      question.addLabels()
+      return question.createTransaction(this.id, index.toString())
+    })
+
+    await dynamoose.transaction([
+      PollModel.transaction.create({
+        id: this.id,
+        questionId: this.id,
+        name: this.title
+      }),
+      ...questionTransactions
+    ])
+  }
 }
 
-module.exports = Poll
+module.exports.Poll = Poll
